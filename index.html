@@ -163,28 +163,36 @@ button {
 <script>
 
 const API = "https://nikhil-birthday-celebration.onrender.com";
+console.log("Using API:", API);
 
 /* LOAD DATA */
 async function loadData(){
-    let res = await fetch(API + "/wishes");
-    let data = await res.json();
+    try {
+        let res = await fetch(API + "/wishes");
+        let data = await res.json();
 
-    let box = document.getElementById("comments");
-    box.innerHTML = "";
+        console.log("DATA:", data);
 
-    data.forEach((w) => {
-        let div = document.createElement("div");
-        div.className = "comment";
+        let box = document.getElementById("comments");
+        box.innerHTML = "";
 
-        div.innerHTML = `
-            <span><b>${w.name}:</b> ${w.msg}</span>
-            <button class="deleteBtn" onclick="deleteComment('${w._id}')">❌</button>
-        `;
+        data.forEach((w) => {
+            let div = document.createElement("div");
+            div.className = "comment";
 
-        box.appendChild(div);
-    });
+            div.innerHTML = `
+                <span><b>${w.name}:</b> ${w.msg}</span>
+                <button class="deleteBtn" onclick="deleteComment('${w._id}')">❌</button>
+            `;
 
-    document.getElementById("count").innerText = data.length;
+            box.appendChild(div);
+        });
+
+        document.getElementById("count").innerText = data.length;
+
+    } catch(err){
+        console.log("ERROR:", err);
+    }
 }
 
 /* ADD */
