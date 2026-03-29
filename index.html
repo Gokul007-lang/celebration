@@ -105,7 +105,6 @@ button {
     border-radius: 5px;
 }
 
-/* DELETE BUTTON */
 .deleteBtn {
     background: red;
     color: white;
@@ -124,35 +123,35 @@ button {
 
 <div class="container">
 
-```
 <div class="side">
     <img src="left.png">
 </div>
 
 <div class="center">
 
-    <img src="nikhil.png" width="150" style="border-radius:50%">
+```
+<img src="nikhil.png" width="150" style="border-radius:50%">
 
-    <div id="game">
-        <img id="player" src="nikhil.png">
-        <div id="obstacle"></div>
-    </div>
+<div id="game">
+    <img id="player" src="nikhil.png">
+    <div id="obstacle"></div>
+</div>
 
-    <p>Press SPACE to Jump</p>
-    <div id="gameOver"></div>
+<p>Press SPACE to Jump</p>
+<div id="gameOver"></div>
 
-    <input id="name" placeholder="Your Name">
-    <input id="msg" placeholder="Your Wish">
-    <button onclick="addComment()">Send</button>
+<input id="name" placeholder="Your Name">
+<input id="msg" placeholder="Your Wish">
+<button onclick="addComment()">Send</button>
 
-    <h3>Total Wishes: <span id="count">0</span></h3>
+<h3>Total Wishes: <span id="count">0</span></h3>
+```
 
 </div>
 
 <div class="side">
     <img src="right.png">
 </div>
-```
 
 </div>
 
@@ -163,19 +162,23 @@ button {
 
 <script>
 
-let data = JSON.parse(localStorage.getItem("wishes")) || [];
+const API = "https://nikhil-birthday-celebration.onrender.com";
 
-function updateUI(){
+/* LOAD DATA */
+async function loadData(){
+    let res = await fetch(API + "/wishes");
+    let data = await res.json();
+
     let box = document.getElementById("comments");
     box.innerHTML = "";
 
-    data.forEach((w, index) => {
+    data.forEach((w) => {
         let div = document.createElement("div");
         div.className = "comment";
 
         div.innerHTML = `
             <span><b>${w.name}:</b> ${w.msg}</span>
-            <button class="deleteBtn" onclick="deleteComment(${index})">❌</button>
+            <button class="deleteBtn" onclick="deleteComment('${w._id}')">❌</button>
         `;
 
         box.appendChild(div);
@@ -184,29 +187,37 @@ function updateUI(){
     document.getElementById("count").innerText = data.length;
 }
 
-function addComment(){
+/* ADD */
+async function addComment(){
     let name = document.getElementById("name").value;
     let msg = document.getElementById("msg").value;
 
     if(name === "" || msg === "") return;
 
-    data.push({name, msg});
-    localStorage.setItem("wishes", JSON.stringify(data));
-
-    updateUI();
+    await fetch(API + "/wish", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({name, msg})
+    });
 
     document.getElementById("name").value = "";
     document.getElementById("msg").value = "";
+
+    loadData();
 }
 
-/* DELETE FUNCTION */
-function deleteComment(index){
-    data.splice(index, 1);
-    localStorage.setItem("wishes", JSON.stringify(data));
-    updateUI();
+/* DELETE */
+async function deleteComment(id){
+    await fetch(API + "/delete/" + id, {
+        method: "DELETE"
+    });
+
+    loadData();
 }
 
-updateUI();
+/* AUTO REFRESH */
+loadData();
+setInterval(loadData, 3000);
 
 /* GAME */
 let player = document.getElementById("player");
@@ -217,9 +228,7 @@ let obstacleX = 400;
 let gameRunning = true;
 
 function gameLoop(){
-
     if(gameRunning){
-
         obstacleX -= 5;
 
         if(obstacleX < -20){
@@ -241,7 +250,6 @@ function gameLoop(){
 gameLoop();
 
 document.addEventListener("keydown", function(e){
-
     if(e.code === "Space"){
         e.preventDefault();
 
