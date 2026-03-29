@@ -1,21 +1,55 @@
-console.log(__dirname);
-const express = require("express");
-const cors = require("cors");
-const path = require("path");
+const fs = require("fs");
 
-const app = express();
+const FILE = "data.json";
 
-app.use(cors());
-app.use(express.json());
+// LOAD DATA
+let wishes = [];
+if (fs.existsSync(FILE)) {
+wishes = JSON.parse(fs.readFileSync(FILE));
+}
 
-// SERVE HTML FILES
-app.use(express.static(__dirname));
+// SAVE FUNCTION
+function saveData() {
+fs.writeFileSync(FILE, JSON.stringify(wishes, null, 2));
+}
 
-// TEST ROUTE
-app.get("/", (req, res) => {
-res.sendFile(path.join(__dirname, "index.html"));
+// ADD WISH
+app.post("/wish", (req, res) => {
+const { name, msg } = req.body;
+
+```
+if (!name || !msg) {
+    return res.json({ success: false });
+}
+
+const newWish = {
+    id: Date.now(),
+    name,
+    msg
+};
+
+wishes.push(newWish);
+saveData();
+
+res.json({ success: true });
+```
+
 });
 
-app.listen(8080, () => {
-console.log("SERVER RUNNING 🚀");
+// GET WISHES
+app.get("/wishes", (req, res) => {
+res.json(wishes);
+});
+
+// DELETE WISH
+app.delete("/delete/:id", (req, res) => {
+const id = parseInt(req.params.id);
+
+```
+wishes = wishes.filter(w => w.id !== id);
+saveData();
+
+res.json({ success: true });
+```
+
 });
