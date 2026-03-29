@@ -1,20 +1,29 @@
-const fs = require("fs");
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const path = require("path");
 
-const FILE = "data.json";
+const app = express();
 
-// LOAD DATA
-let wishes = [];
-if (fs.existsSync(FILE)) {
-wishes = JSON.parse(fs.readFileSync(FILE));
-}
+app.use(cors());
+app.use(express.json());
+app.use(express.static(__dirname));
 
-// SAVE FUNCTION
-function saveData() {
-fs.writeFileSync(FILE, JSON.stringify(wishes, null, 2));
-}
+/* 🔥 CONNECT TO MONGODB */
+mongoose.connect("mongodb+srv://Gokul:[12345678@cluster0.fp4hxwy.mongodb.net](mailto:12345678@cluster0.fp4hxwy.mongodb.net)/birthday?retryWrites=true&w=majority")
+.then(() => console.log("✅ MongoDB Connected"))
+.catch(err => console.log("❌ Mongo Error:", err));
 
-// ADD WISH
-app.post("/wish", (req, res) => {
+/* SCHEMA */
+const wishSchema = new mongoose.Schema({
+name: String,
+msg: String
+});
+
+const Wish = mongoose.model("Wish", wishSchema);
+
+/* ADD WISH */
+app.post("/wish", async (req, res) => {
 const { name, msg } = req.body;
 
 ```
@@ -22,34 +31,34 @@ if (!name || !msg) {
     return res.json({ success: false });
 }
 
-const newWish = {
-    id: Date.now(),
-    name,
-    msg
-};
-
-wishes.push(newWish);
-saveData();
+const newWish = new Wish({ name, msg });
+await newWish.save();
 
 res.json({ success: true });
 ```
 
 });
 
-// GET WISHES
-app.get("/wishes", (req, res) => {
-res.json(wishes);
+/* GET ALL WISHES */
+app.get("/wishes", async (req, res) => {
+const data = await Wish.find();
+res.json(data);
 });
 
-// DELETE WISH
-app.delete("/delete/:id", (req, res) => {
-const id = parseInt(req.params.id);
-
-```
-wishes = wishes.filter(w => w.id !== id);
-saveData();
-
+/* DELETE */
+app.delete("/delete/:id", async (req, res) => {
+await Wish.findByIdAndDelete(req.params.id);
 res.json({ success: true });
-```
+});
 
+/* HOME */
+app.get("/", (req, res) => {
+res.sendFile(path.join(__dirname, "index.html"));
+});
+
+/* START SERVER */
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+console.log("🚀 Server running");
 });
