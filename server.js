@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.static(__dirname));
 
 /* 🔥 CONNECT TO MONGODB */
-mongoose.connect("mongodb+srv://Gokul:<NOTU@2340>@cluster0.fp4hxwy.mongodb.net/?appName=Cluster0")
+mongoose.connect("mongodb+srv://Gokul:<NOTU@2340>@cluster0.fp4hxwy.mongodb.net/birthday?rewrites=true&w=majority")
 .then(() => console.log("✅ MongoDB Connected"))
 .catch(err => console.log("❌ Mongo Error:", err));
 
