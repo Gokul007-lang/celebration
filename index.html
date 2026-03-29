@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<title>Happy Birthday Nikhil 🎉</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: linear-gradient(to right, #ff758c, #ff7eb3);
+    color: white;
+    text-align: center;
+}
+
+/* Layout */
+.container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+.side {
+    width: 20%;
+}
+.side img {
+    width: 100%;
+    border-radius: 15px;
+}
+
+.center {
+    width: 60%;
+}
+
+/* GAME */
+#game {
+    width: 400px;
+    height: 200px;
+    background: white;
+    margin: auto;
+    position: relative;
+    overflow: hidden;
+    border: 4px solid black;
+    border-radius: 15px;
+}
+
+#player {
+    width: 50px;
+    position: absolute;
+    bottom: 0;
+    left: 30px;
+}
+
+#obstacle {
+    width: 12px;
+    height: 25px;
+    background: red;
+    position: absolute;
+    bottom: 0;
+    left: 400px;
+}
+
+.jump {
+    animation: jump 0.5s;
+}
+
+@keyframes jump {
+    0% { bottom: 0; }
+    50% { bottom: 90px; }
+    100% { bottom: 0; }
+}
+
+input {
+    padding: 8px;
+    margin: 5px;
+}
+
+button {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+/* COMMENTS */
+#commentsSection {
+    width: 90%;
+    margin: 30px auto;
+    background: rgba(0,0,0,0.7);
+    border-radius: 10px;
+    padding: 10px;
+}
+
+#comments {
+    max-height: 200px;
+    overflow-y: scroll;
+}
+
+.comment {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 8px 0;
+    padding: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+}
+
+/* DELETE BUTTON */
+.deleteBtn {
+    background: red;
+    color: white;
+    border: none;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🎉 Happy Birthday Nikhil 🎤</h1>
+
+<div class="container">
+
+```
+<div class="side">
+    <img src="left.png">
+</div>
+
+<div class="center">
+
+    <img src="nikhil.png" width="150" style="border-radius:50%">
+
+    <div id="game">
+        <img id="player" src="nikhil.png">
+        <div id="obstacle"></div>
+    </div>
+
+    <p>Press SPACE to Jump</p>
+    <div id="gameOver"></div>
+
+    <input id="name" placeholder="Your Name">
+    <input id="msg" placeholder="Your Wish">
+    <button onclick="addComment()">Send</button>
+
+    <h3>Total Wishes: <span id="count">0</span></h3>
+
+</div>
+
+<div class="side">
+    <img src="right.png">
+</div>
+```
+
+</div>
+
+<div id="commentsSection">
+    <h2>🎉 Wishes</h2>
+    <div id="comments"></div>
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("wishes")) || [];
+
+function updateUI(){
+    let box = document.getElementById("comments");
+    box.innerHTML = "";
+
+    data.forEach((w, index) => {
+        let div = document.createElement("div");
+        div.className = "comment";
+
+        div.innerHTML = `
+            <span><b>${w.name}:</b> ${w.msg}</span>
+            <button class="deleteBtn" onclick="deleteComment(${index})">❌</button>
+        `;
+
+        box.appendChild(div);
+    });
+
+    document.getElementById("count").innerText = data.length;
+}
+
+function addComment(){
+    let name = document.getElementById("name").value;
+    let msg = document.getElementById("msg").value;
+
+    if(name === "" || msg === "") return;
+
+    data.push({name, msg});
+    localStorage.setItem("wishes", JSON.stringify(data));
+
+    updateUI();
+
+    document.getElementById("name").value = "";
+    document.getElementById("msg").value = "";
+}
+
+/* DELETE FUNCTION */
+function deleteComment(index){
+    data.splice(index, 1);
+    localStorage.setItem("wishes", JSON.stringify(data));
+    updateUI();
+}
+
+updateUI();
+
+/* GAME */
+let player = document.getElementById("player");
+let obstacle = document.getElementById("obstacle");
+let gameOverText = document.getElementById("gameOver");
+
+let obstacleX = 400;
+let gameRunning = true;
+
+function gameLoop(){
+
+    if(gameRunning){
+
+        obstacleX -= 5;
+
+        if(obstacleX < -20){
+            obstacleX = 400;
+        }
+
+        obstacle.style.left = obstacleX + "px";
+
+        let playerTop = parseInt(window.getComputedStyle(player).bottom);
+
+        if(obstacleX < 60 && obstacleX > 20 && playerTop < 30){
+            gameRunning = false;
+            gameOverText.innerText = "💀 Game Over! Press SPACE to Restart";
+        }
+    }
+
+    requestAnimationFrame(gameLoop);
+}
+gameLoop();
+
+document.addEventListener("keydown", function(e){
+
+    if(e.code === "Space"){
+        e.preventDefault();
+
+        if(!gameRunning){
+            obstacleX = 400;
+            gameRunning = true;
+            gameOverText.innerText = "";
+            return;
+        }
+
+        if(!player.classList.contains("jump")){
+            player.classList.add("jump");
+            setTimeout(()=>player.classList.remove("jump"),500);
+        }
+    }
+});
+
+</script>
+
+</body>
+</html>
